@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Local scheduler for the swarm-KB machine (macOS launchd).
+     Install:
+       cp launch/com.swarm-kb.agent.plist.example \
+          ~/Library/LaunchAgents/com.swarm-kb.agent.plist
+       # edit the absolute paths + PATH below to match your machine, then:
+       launchctl load ~/Library/LaunchAgents/com.swarm-kb.agent.plist
+     Uninstall:
+       launchctl unload ~/Library/LaunchAgents/com.swarm-kb.agent.plist
+       rm ~/Library/LaunchAgents/com.swarm-kb.agent.plist
+     Fires swarm-tick.sh every 30 minutes. -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.swarm-kb.agent</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>/Users/ryansearle/projects/swarm-kb-template/bin/swarm-tick.sh</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>REPO</key><string>/Users/ryansearle/projects/swarm-kb-template</string>
+    <key>MAX_AGENTS</key><string>2</string>
+    <!-- UNATTENDED runs cannot answer permission prompts. bypassPermissions is
+         safe because each agent runs in a throwaway clone with no secrets. -->
+    <key>PERMISSION_MODE</key><string>bypassPermissions</string>
+    <!-- launchd has a minimal PATH; make sure claude/git/gh resolve. -->
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+  <key>StartInterval</key><integer>1800</integer>
+  <key>RunAtLoad</key><false/>
+  <key>StandardOutPath</key><string>/Users/ryansearle/.local/state/swarm-kb/launchd.out.log</string>
+  <key>StandardErrorPath</key><string>/Users/ryansearle/.local/state/swarm-kb/launchd.err.log</string>
+</dict>
+</plist>
