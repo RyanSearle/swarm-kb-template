@@ -48,10 +48,20 @@ interchangeable behind one entrypoint.
 | `MAX_AGENTS` | max parallel agents per tick (concurrency dial) | 2 |
 | `PERMISSION_MODE` | `acceptEdits` (attended) or `bypassPermissions` (unattended) | acceptEdits |
 | `CLAIM_TTL_MIN` | claim staleness before the reaper reclaims it | 45 |
-| `MODEL` | optional `--model` override | (account default) |
+| `MODEL` | `--model` for EVERY agent (worker/planner/integrator) — **pin one with quota** (see Notes) | (account default) |
 
 ## Notes
 
+- **Pin `MODEL` — model selection is policy, not a detail.** It sets the
+  `--model` every agent runs on. Left UNSET, agents use your **account default
+  model**, which can hit a **model-specific rate limit independently of your
+  credit balance** — when that happens agents exit doing nothing while ticks
+  still log `tick done`, so the swarm stalls **silently** (tell-tale: the
+  `open` task count never drops). Pin a model you know has quota; if the board
+  freezes, grep the agent log for `reached your <model> limit`. Model is
+  currently **uniform across roles** (role is elected *after* launch, inside
+  the session) — per-role models (a stronger planner, cheaper workers) would
+  need a launch-time split: a noted future extension.
 - Unattended runs need a non-prompting permission mode (`bypassPermissions`) —
   safe because each agent works in a throwaway clone with no secrets — or a
   committed `.claude/settings.json` allowlist.
