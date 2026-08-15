@@ -21,6 +21,10 @@
   </array>
   <key>EnvironmentVariables</key>
   <dict>
+    <!-- Pin a model with quota. UNSET = account default, which can hit a
+         model-specific rate limit independently of credits and stall the
+         swarm silently. Forwarded to every agent as --model. -->
+    <!-- <key>MODEL</key><string>claude-sonnet-5</string> -->
     <key>REPO</key><string>/Users/ryansearle/projects/swarm-kb-template</string>
     <key>MAX_AGENTS</key><string>2</string>
     <!-- UNATTENDED runs cannot answer permission prompts. bypassPermissions is
