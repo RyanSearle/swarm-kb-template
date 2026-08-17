@@ -45,13 +45,21 @@ interchangeable behind one entrypoint.
 
 | Env | Meaning | Default |
 |---|---|---|
-| `MAX_AGENTS` | max parallel agents per tick (concurrency dial) | 2 |
+| `MAX_AGENTS` | max CONCURRENT agents — the pool size each tick tops up to | 2 |
 | `PERMISSION_MODE` | `acceptEdits` (attended) or `bypassPermissions` (unattended) | acceptEdits |
 | `CLAIM_TTL_MIN` | claim staleness before the reaper reclaims it | 45 |
+| `AGENT_MAX_MIN` | kill an agent still running past this many minutes (hung-session backstop) | 30 |
 | `MODEL` | optional `--model` override | (account default) |
 
 ## Notes
 
+- **Agents are independent (top-up pool).** Each tick reaps finished/over-age
+  agents, counts the survivors, and launches only enough NEW agents to refill
+  the pool to `MAX_AGENTS` — each fully detached, no `wait`. A slow or hung
+  agent never blocks the tick, its peers, or the next tick; a stuck one is
+  killed after `AGENT_MAX_MIN`. Needs `AbandonProcessGroup=true` in the plist
+  (set in the example) so launchd doesn't kill the detached agents when the
+  short-lived tick process exits.
 - Unattended runs need a non-prompting permission mode (`bypassPermissions`) —
   safe because each agent works in a throwaway clone with no secrets — or a
   committed `.claude/settings.json` allowlist.
