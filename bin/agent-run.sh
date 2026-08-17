@@ -31,8 +31,12 @@ export AGENT_ID="${AGENT_ID:-$(date -u +%Y%m%d%H%M)-$(openssl rand -hex 2)}"
 PERMISSION_MODE="${PERMISSION_MODE:-acceptEdits}"
 MODEL="${MODEL:-}"
 
+RUN_DIR="${RUN_DIR:-${STATE_DIR:-$HOME/.local/state/swarm-kb}/agents}"
+mkdir -p "$RUN_DIR"
+PIDFILE="$RUN_DIR/$AGENT_ID.pid"
+echo "$$" > "$PIDFILE"   # swarm-tick.sh counts/reaps the pool by these
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/swarm-${AGENT_ID}.XXXXXX")"
-cleanup() { cd /; rm -rf "$WORK"; }
+cleanup() { cd /; rm -rf "$WORK"; rm -f "$PIDFILE"; }
 trap cleanup EXIT
 
 git clone -q "$REMOTE_URL" "$WORK"

@@ -29,6 +29,8 @@
     <!-- launchd has a minimal PATH; make sure claude/git/gh resolve. -->
     <key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
   </dict>
+  <!-- keep the detached agents alive after each short tick exits -->
+  <key>AbandonProcessGroup</key><true/>
   <key>StartInterval</key><integer>1800</integer>
   <key>RunAtLoad</key><false/>
   <key>StandardOutPath</key><string>/Users/ryansearle/.local/state/swarm-kb/launchd.out.log</string>
