@@ -38,11 +38,17 @@ failure mode Part F exists to kill.
 
 1. **INTEGRATOR** — if `scripts/integrate.sh list` shows ready branches AND
    `scripts/claim.sh try integrator` wins: follow procedures/INTEGRATOR.md.
-2. **PLANNER** — if any of the following AND `scripts/claim.sh try planner`
-   wins: (a) protocols/DIRECTIVES.md has Pending entries; (b) protocols/
-   QUESTIONS.md has Answered entries not yet applied (check every blocked/open
-   task that references a question id against the Answered section DIRECTLY —
-   do not use timestamps; this check must be idempotent); (c) fewer than
+2. **PLANNER** — ONLY if NO planning pass is already queued for integration
+   (`refs/ready/plan-*` must be empty — check `scripts/integrate.sh list` or
+   `git for-each-ref refs/ready/plan-*`). A queued planning pass has not reached
+   main yet, so its freshly-seeded task IDs are invisible to you and a second
+   planner would re-seed the SAME ids and get BOUNCED (add/add collision). If a
+   plan branch is queued, elect INTEGRATOR to drain it (or WORKER), not PLANNER.
+   If that guard passes AND `scripts/claim.sh try planner` wins AND any of: (a)
+   protocols/DIRECTIVES.md has Pending entries; (b) protocols/QUESTIONS.md has
+   Answered entries not yet applied (check every blocked/open task that
+   references a question id against the Answered section DIRECTLY — do not use
+   timestamps; this check must be idempotent); (c) fewer than
    {{MIN_OPEN_TASKS:5}} open tasks in tasks/; (d) a release/event trigger from
    DOMAIN.md has fired since the last planner log. Follow procedures/PLANNER.md.
 3. **WORKER** — if any task file in tasks/ has `status: open`: follow
