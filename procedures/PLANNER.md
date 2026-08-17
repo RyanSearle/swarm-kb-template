@@ -8,6 +8,13 @@ Singleton (claim `planner`). One planning pass on a branch
 The planner is where autonomous remediation happens (it seeds tasks and writes
 protocols/DECISIONS.md). Run this FIRST.
 
+0. **Serialize on the merge queue (check before anything else).** If a planning
+   branch is already queued for integration (`refs/ready/plan-*` exists), a
+   prior planner's pass has NOT reached main yet — running now would re-seed the
+   same task IDs and get bounced. Do not proceed: release the planner claim and
+   exit, letting the integrator drain the queue first. Only run a pass when no
+   `plan-*` branch is queued.
+
 1. **Invariant guards (F4).** Recompute the scheduler's derived quantities from
    tasks/ + logs/ and assert their bounds. If a gate has been starved — e.g. more
    than {{SELF_AUDIT_EVERY:25}}+1 completed tasks since the last self-audit log, or
