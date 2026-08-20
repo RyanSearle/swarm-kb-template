@@ -14,7 +14,7 @@
 # the detached agents when this short-lived tick process exits.
 set -euo pipefail
 
-REPO="${REPO:-$HOME/projects/swarm-kb-poe2}"
+REPO="${REPO:-$HOME/projects/swarm-kb-template}"
 MAIN_BRANCH="${MAIN_BRANCH:-main}"
 MAX_AGENTS="${MAX_AGENTS:-2}"
 AGENT_MAX_MIN="${AGENT_MAX_MIN:-30}"   # kill an agent still running past this (keep < CLAIM_TTL_MIN so its claim later reaps)
@@ -28,6 +28,19 @@ cd "$REPO"
 git fetch -q origin 2>/dev/null || true
 git checkout -q "$MAIN_BRANCH" 2>/dev/null || true
 git pull -q --ff-only 2>/dev/null || true
+
+# --- Auth canary ------------------------------------------------------------
+# Prove headless GitHub auth BEFORE launching agents. Without a git credential
+# helper every agent dies on `git clone` ("could not read Username"), which
+# surfaces only as a silently stuck backlog. Cheap ls-remote, prompts DISABLED
+# so a broken credential fails fast instead of blocking on a tty read.
+REMOTE_URL="${REMOTE_URL:-$(git -C "$REPO" remote get-url origin 2>/dev/null)}"
+if GIT_TERMINAL_PROMPT=0 git ls-remote "$REMOTE_URL" -h "$MAIN_BRANCH" >/dev/null 2>&1; then
+  auth=ok
+else
+  auth=FAIL
+  echo "$(date -u +%FT%TZ) AUTH=FAIL cannot reach $REMOTE_URL headlessly — launching NO agents (they would all die on clone). Fix: run 'gh auth setup-git' then verify 'git ls-remote $REMOTE_URL'." >> "$LOG"
+fi
 
 # portable elapsed-seconds for a pid (parses ps etime [[dd-]hh:]mm:ss)
 agent_age_s() {
@@ -70,7 +83,8 @@ elif [ "${open:-0}" -lt 1 ];      then n=1
 elif [ "$open" -lt "$headroom" ]; then n="$open"
 else                                   n="$headroom"; fi
 
-echo "$(date -u +%FT%TZ) tick open=$open running=$running waking=$n max=$MAX_AGENTS" >> "$LOG"
+[ "$auth" = ok ] || n=0   # auth canary failed → refuse to launch this tick
+echo "$(date -u +%FT%TZ) tick open=$open running=$running waking=$n max=$MAX_AGENTS auth=$auth" >> "$LOG"
 
 # launch each new agent FULLY DETACHED — no wait; a hung one can't block anything.
 for ((i=0; i<n; i++)); do
