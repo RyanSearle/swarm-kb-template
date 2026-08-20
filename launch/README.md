@@ -53,6 +53,14 @@ interchangeable behind one entrypoint.
 
 ## Notes
 
+- **Auth canary (fail loud, not silent).** Each tick first proves headless
+  GitHub auth with a prompt-disabled `git ls-remote` before launching. On
+  failure it logs a distinctive `AUTH=FAIL … Fix: gh auth setup-git` line and
+  launches NO agents — a missing git credential helper otherwise makes every
+  agent die on `git clone` and shows up only as a silently stuck backlog. The
+  tick line carries an `auth=ok|FAIL` field; grep it to spot a broken
+  credential instantly. Fix once with `gh auth setup-git` (installs
+  `gh` as the credential helper), then verify `git ls-remote <origin>`.
 - **Agents are independent (top-up pool).** Each tick reaps finished/over-age
   agents, counts the survivors, and launches only enough NEW agents to refill
   the pool to `MAX_AGENTS` — each fully detached, no `wait`. A slow or hung
