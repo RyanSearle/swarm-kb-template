@@ -31,8 +31,13 @@ and then waits for permission.
 
 1. **Sharded ledger** — one file per task. No agent ever edits a shared
    status list. The queue is a directory listing.
-2. **Generated indexes** — index/catalogue pages are build artifacts
-   (scripts/build_indexes.py, integrator-run). Hand-editing one is a bug.
+2. **Generated indexes & graph colours** — index/catalogue pages
+   (scripts/build_indexes.py) and the Obsidian graph colour-groups spec
+   `.obsidian/graph-colors.generated.json` (scripts/build_graph_colors.py)
+   are build artifacts, integrator-run. Hand-editing one is a bug. The live
+   `.obsidian/graph.json` is gitignored and user-owned; bin/swarm-tick.sh
+   applies only its colorGroups from the spec locally
+   (scripts/apply_graph_colors.py).
 3. **Derived state** — no counters file. Counts come from listing tasks/,
    grepping logs/. Nothing to conflict, nothing to drift.
 4. **Append-only, one-file-per-writer logs** — logs/<agent-id>.md.

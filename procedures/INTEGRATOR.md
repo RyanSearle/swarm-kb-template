@@ -21,9 +21,12 @@ For each `refs/ready/<ID>` (oldest first), on an up-to-date local main:
      (`bounce_reason:`) in a tiny direct commit. The planner re-opens bounced
      tasks with instructions.
 3. After all merges: if any kb/ docs changed, run
-   `python3 scripts/build_indexes.py` and include regenerated indexes in a
-   final commit. **Indexes are build artifacts — never hand-edited, never a
-   merge conflict.**
+   `python3 scripts/build_indexes.py && python3 scripts/build_graph_colors.py`
+   and include the regenerated indexes AND
+   `.obsidian/graph-colors.generated.json` in a final commit. **Both are
+   build artifacts — never hand-edited, never a merge conflict.** (The live
+   `.obsidian/graph.json` is gitignored/user-owned; the tick applies its
+   colorGroups locally.)
 
 ## 2. Exit
 

@@ -29,6 +29,12 @@ git fetch -q origin 2>/dev/null || true
 git checkout -q "$MAIN_BRANCH" 2>/dev/null || true
 git pull -q --ff-only 2>/dev/null || true
 
+# Maintain the LOCAL Obsidian graph colour-groups (best-effort; no-ops
+# without a vault). The spec is a swarm-generated tracked artifact; this
+# writes only the colorGroups key into the gitignored, user-owned
+# .obsidian/graph.json so nodes are coloured by kb/ area.
+python3 "$REPO/scripts/apply_graph_colors.py" >/dev/null 2>&1 || true
+
 # --- Auth canary ------------------------------------------------------------
 # Prove headless GitHub auth BEFORE launching agents. Without a git credential
 # helper every agent dies on `git clone` ("could not read Username"), which
