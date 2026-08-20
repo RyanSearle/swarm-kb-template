@@ -42,7 +42,18 @@ protocols/DECISIONS.md). Run this FIRST.
    is a set-comparison, not a "newer than last time" filter — it cannot
    permanently miss (lesson: the watermark bug).
 3. **Proposals**: triage tasks/proposals/* into real tasks or a rejection note.
-4. **Bounced**: re-open `refs/bounced` tasks with concrete merge instructions.
+4. **Bounced** (consume the signal, THEN delete the ref — bounced refs have no
+   other lifecycle; the integrator only ever *pushes* to `refs/bounced`, so a
+   ref left in place is hoisted by the dashboard as "needs rework" forever):
+   - `refs/bounced/plan-*` — a bounced planner pass is NEVER re-run (the next
+     pass re-derives the same seeds idempotently), so it is always superseded.
+     Delete it on sight, never re-open it: `git push origin :refs/bounced/plan-<id>`.
+   - `refs/bounced/<task-id>` — re-open the task with concrete merge
+     instructions in its `notes:`, THEN delete the consumed ref:
+     `git push origin :refs/bounced/<task-id>`.
+   Also GC any bounced ref whose task is already `status: done`/archived or
+     whose seeds are already on main (a stale race-loser) — delete without
+     re-opening.
 
 ## 2. Event check (DOMAIN.md §Release/event triggers)
 
