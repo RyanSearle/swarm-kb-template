@@ -7,6 +7,14 @@ You configure ONE file and register your sources; the machine does the rest.
 GitHub *Use this template* → your new repo, or fork. Clone it. The default branch
 is the single coordination plane every agent clones and pushes to.
 
+## 1b. Pick a problem pack
+
+Packs (`problems/`, design: `docs/design/problem-packs.md`) adapt the engine
+to a KIND of problem. The root files ship as the **kb** pack — for a
+knowledge base just continue below. For a programming problem, copy
+`problems/code/DOMAIN.md` over root `DOMAIN.md` and keep the pack's
+`SHAPES.md`/`EXECUTE.md` beside `procedures/` before continuing.
+
 ## 2. Fill `DOMAIN.md`
 
 This is the only domain-specific file — the spec the PLANNER plans against. Fill
