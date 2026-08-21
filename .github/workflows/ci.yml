@@ -1,0 +1,36 @@
+name: checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax
+        run: bash -n bin/*.sh scripts/*.sh
+      - name: Python syntax
+        run: python3 -m py_compile scripts/*.py
+      - name: Plist examples parse
+        run: |
+          python3 - <<'PY'
+          import glob, plistlib
+          files = glob.glob('launch/*.plist.example')
+          assert files, 'no plist examples found'
+          for f in files:
+              with open(f, 'rb') as fh:
+                  plistlib.load(fh)
+              print('ok', f)
+          PY
+      - name: Template completeness
+        run: |
+          for f in AGENT.md DOMAIN.md DESIGN.md docs/INSTANTIATE.md \
+                   procedures/WORKER.md procedures/PLANNER.md \
+                   procedures/INTEGRATOR.md procedures/TASK_SHAPES.md \
+                   protocols/CONVENTIONS.md problems/README.md \
+                   scripts/claim.sh scripts/ready.sh scripts/integrate.sh \
+                   bin/agent-run.sh bin/swarm-tick.sh; do
+            test -f "$f" || { echo "missing $f"; exit 1; }
+          done
