@@ -930,17 +930,18 @@ function taskStatusGroup(t){
   let eff=(t.effective_status||t.status||'').toLowerCase();
   if(eff==='claimed') return 'claimed';
   let s=(t.status||'').toLowerCase();
+  if(s==='cancelled'||s==='withdrawn') return null;  // terminal: hidden from the board
+  if(t.done_dir) return 'done';  // the archive dir is authoritative over a stale status field
   if(s==='open' && t.claimed_by) return 'claimed';
   if(s==='in_progress'||s==='ready') return 'claimed';  // main only shows open/done; these are transient worker-branch states
   if(['open','blocked','done'].includes(s)) return s;
-  if(t.done_dir) return 'done';
   return 'open';
 }
 
 function renderBoard(tasks){
   const groups={};
   STATUSES.forEach(([k])=>groups[k]=[]);
-  tasks.forEach(t=>{const g=taskStatusGroup(t);(groups[g]||(groups[g]=[])).push(t);});
+  tasks.forEach(t=>{const g=taskStatusGroup(t);if(!g)return;(groups[g]||(groups[g]=[])).push(t);});
   const board=$('board'); board.innerHTML='';
   const byId=(a,b)=>String(a.id||'').localeCompare(String(b.id||''),undefined,{numeric:true});
   STATUSES.forEach(([key,label])=>{
