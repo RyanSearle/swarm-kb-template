@@ -39,3 +39,30 @@ For each `refs/ready/<ID>` (oldest first), on an up-to-date local main:
   interleave integrating and working.
 - Main must always be consistent: every commit on main leaves tasks/, kb/ and
   indexes agreeing with each other.
+
+## Cloud PR lane (after the ready-queue pass)
+
+Cloud-runner sessions (e.g. claude.ai/code routines) cannot push
+coordination refs or task branches — their git proxy allows only the
+session's own branch plus PR creation. They deliver completed tasks as PRs
+titled `swarm-cloud: T#### <summary>` (see docs/cloud-runners.md). After
+draining `refs/ready/*`:
+
+1. List open PRs whose title starts with `swarm-cloud:` (`gh pr list
+   --state open --json number,title,headRefName`; if `gh` is unavailable,
+   skip this section and note that in your log).
+2. For each, oldest first, treat the PR head EXACTLY like a ready branch:
+   - Duplicate check: task already done on main → close the PR with a
+     comment. Next.
+   - Merge gate: identical to any ready branch (this instance's EXECUTE.md
+     gate — run it; never merge red).
+   - Clean + green → merge, flip the task to done if the worker couldn't,
+     push main, close the PR as merged.
+   - Gate red or judgement-shaped conflict → do NOT merge: comment
+     `bounce: <reason>`, close the PR, and append `bounce_reason:` to the
+     task file on main (tiny direct commit) so the planner re-opens it —
+     the cloud session branch is dead once its session ends, so bounces
+     live on main, not the PR.
+3. Cloud workers cannot flip task status or write logs to main — do both at
+   merge (the PR body carries the session log; copy it into
+   logs/<agent-id>.md if present).

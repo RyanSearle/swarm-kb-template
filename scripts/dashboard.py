@@ -1080,7 +1080,20 @@ function setStatus(ok,txt){
   $('statustxt').textContent=txt;
 }
 
+const SCROLLERS='.panel .body,.board .col .cards,.tl pre';
+function snapScroll(){
+  return {win:[window.scrollX,window.scrollY],
+          els:[...document.querySelectorAll(SCROLLERS)].map(e=>[e.scrollTop,e.scrollLeft])};
+}
+function restoreScroll(s){
+  if(!s) return;
+  [...document.querySelectorAll(SCROLLERS)].forEach((e,i)=>{
+    if(s.els[i]){e.scrollTop=s.els[i][0];e.scrollLeft=s.els[i][1];}
+  });
+  window.scrollTo(s.win[0],s.win[1]);
+}
 function render(s){
+  const _snap=snapScroll();
   TTL=s.ttl_min||45;
   $('repo').textContent=s.repo;
   $('ttlpill').textContent='TTL '+TTL+'m';
@@ -1095,6 +1108,7 @@ function render(s){
   renderMerges(s.merges||[]);
   renderAgents(s.agents||[]);
   renderDecisions(s.decisions||[]);
+  restoreScroll(_snap);
   const t=new Date();
   $('refreshed').textContent='updated '+t.toLocaleTimeString();
 }
